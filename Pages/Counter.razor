@@ -1,0 +1,28 @@
+@page "/counter"
+@inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    protected override void OnInitialized()
+    {
+        LocalStorage.SetItem("name", "John Smith");
+        currentCount = LocalStorage.GetItem<int>("count");
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        LocalStorage.SetItem("count", currentCount);
+    }
+
+}
