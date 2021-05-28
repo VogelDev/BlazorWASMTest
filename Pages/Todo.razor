@@ -1,0 +1,52 @@
+﻿@page "/todo"
+@inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
+
+
+<h3>Todo</h3>
+
+<input @bind="newTodo" /><button @onclick="AddNewTodo">Add new todo</button>
+
+<br/>
+<ul>
+    @foreach (var todo in _todos)
+    {
+        <li>
+            <input type="checkbox" @bind="todo.IsDone"/>
+            @todo.Title
+        </li>
+    }
+</ul>
+
+@code {
+    private List<TodoItem> _todos;
+    private string newTodo;
+
+    public void AddNewTodo()
+    {
+
+        if (!string.IsNullOrWhiteSpace(newTodo))
+        {
+            _todos.Add(new TodoItem { Title = newTodo });
+            newTodo = "";
+        }
+
+    }
+
+    protected override void OnInitialized()
+    {
+        if (LocalStorage.ContainKey("todo_list"))
+        {
+            _todos = LocalStorage.GetItem<List<TodoItem>>("todo_list");
+        }
+        else
+        {
+            _todos = new();
+        }
+
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        LocalStorage.SetItem("todo_list", _todos);
+    }
+}
