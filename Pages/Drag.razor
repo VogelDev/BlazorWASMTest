@@ -1,0 +1,73 @@
+﻿@page "/drag"
+@inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
+<h3>Drag</h3>
+<input @bind="newTodo"/><button @onclick="AddNewTodo">Add new todo</button>
+
+<JobsContainer Jobs="Jobs" OnStatusUpdated="HandleStatusUpdated">
+    <JobsList ListStatus="JobStatuses.Todo" AllowedStatuses="@(new JobStatuses[] {JobStatuses.Started})"/>
+    <JobsList ListStatus="JobStatuses.Started" AllowedStatuses="@(new JobStatuses[] {JobStatuses.Todo})"/>
+    <JobsList ListStatus="JobStatuses.Completed" AllowedStatuses="@(new JobStatuses[] {JobStatuses.Started})"/>
+</JobsContainer>
+<hr/>
+<p>Last updated job was: <strong>@lastUpdatedJob</strong></p>
+<hr/>
+
+@foreach (var task in Jobs.OrderBy(j => j.Status).ThenBy(j => j.Order))
+{
+    <p>@task.Description - <strong>@task.Status</strong></p>
+}
+
+
+@code {
+    //adapted from https://chrissainty.com/investigating-drag-and-drop-with-blazor/
+    List<JobModel> Jobs = new();
+    string lastUpdatedJob = "";
+    string newTodo = "";
+
+    protected override void OnInitialized()
+    {
+        if (LocalStorage.ContainKey("todo_drag_list"))
+        {
+            Jobs = LocalStorage.GetItem<List<JobModel>>("todo_drag_list");
+        }
+        else
+        {
+            Jobs = new();
+        }
+    }
+
+    private void AddNewTodo()
+    {
+        if (!string.IsNullOrWhiteSpace(newTodo))
+        {
+            var id = 0;
+            var order = 0.0;
+            if (Jobs.Count > 0)
+            {
+                id = Jobs.Max(j => j.Id) + 1;
+                order = Jobs.Max(j => j.Order) + 1;
+            }
+            
+            Jobs.Add(new JobModel
+            {
+                Id = id,
+                Description = newTodo,
+                Status = JobStatuses.Todo,
+                LastUpdated = DateTime.Now,
+                Order = order,
+            });
+            newTodo = "";
+        }
+    }
+
+    void HandleStatusUpdated(JobModel updatedJob)
+    {
+        lastUpdatedJob = updatedJob.Description;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        LocalStorage.SetItem("todo_drag_list", Jobs);
+    }
+
+}

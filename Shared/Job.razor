@@ -1,0 +1,43 @@
+﻿<li id="@JobModel.Id" class="draggable @dropClass" 
+    @ondrop="Dropped" 
+    draggable="true" 
+    title="@JobModel.Description" 
+    @ondragstart="@(() => HandleDragStart(JobModel))"
+    @ondragover="HandleDragEnter"
+    @ondragleave="HandleDragLeave"
+    >
+    <p class="description">@JobModel.Description</p>
+    <p class="last-updated"><small>Last Updated</small> @JobModel.LastUpdated.ToString("HH:mm.ss tt")</p>
+</li>
+
+@code {
+
+    [CascadingParameter]
+    JobsContainer Container { get; set; }
+
+    [Parameter]
+    public JobModel JobModel { get; set; }
+
+    private string dropClass = "";
+
+    private void HandleDragStart(JobModel selectedJob)
+    {
+        Container.Payload = selectedJob;
+    }
+
+    private void HandleDragEnter()
+    {
+        dropClass = "hovered-drag";
+    }
+
+    private void HandleDragLeave()
+    {
+        dropClass = "";
+    }
+
+    private void Dropped(DragEventArgs e)
+    {
+        Container.Payload.Order = JobModel.Order + 0.1;
+        dropClass = "";
+    }
+}

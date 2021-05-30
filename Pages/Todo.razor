@@ -6,12 +6,12 @@
 
 <input @bind="newTodo" /><button @onclick="AddNewTodo">Add new todo</button>
 
-<br/>
+<br />
 <ul>
     @foreach (var todo in _todos)
     {
         <li>
-            <input type="checkbox" @bind="todo.IsDone"/>
+            <input type="checkbox" @bind="todo.IsDone" />
             @todo.Title
         </li>
     }
@@ -21,9 +21,20 @@
     private List<TodoItem> _todos;
     private string newTodo;
 
+    //because of the delay on the binding from the text input, you have to wait too long for enter to actually work
+    public void Enter(KeyboardEventArgs e)
+    {
+        System.Console.WriteLine(e.Code);
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            AddNewTodo();
+        }
+    }
+
     public void AddNewTodo()
     {
 
+        System.Console.WriteLine(newTodo);
         if (!string.IsNullOrWhiteSpace(newTodo))
         {
             _todos.Add(new TodoItem { Title = newTodo });
